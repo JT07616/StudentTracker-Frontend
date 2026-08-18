@@ -16,7 +16,7 @@ async function submitLogin() {
   obrada.value = true;
   try {
     await authStore.login({ email: email.value, password: password.value });
-    router.push("/"); 
+    router.push("/dashboard"); 
   } catch (error) {
     greska.value = error.response?.data?.errors?.[0]?.msg || error.response?.data?.message || "Pogrešan email ili lozinka";
   } finally {

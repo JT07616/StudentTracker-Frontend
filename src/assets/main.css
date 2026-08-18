@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+@import "tailwindcss";
+
+@theme {
+  --color-brown: #b56a3d;
+}
+
 html,
 body,
 #app {
@@ -17,3 +23,4 @@ body,
 .input {
   @apply mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-[#b56a3d] focus:outline-none;
 }
+
