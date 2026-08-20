@@ -134,7 +134,7 @@ async function spremiKolegij() {
 // tip odreduje i poruku i rutu brisanja; kriva vrijednost pukne vidljivo (404 u modalu)
 function zatraziBrisanje(tip, stavka) {
   greskaBrisanja.value = ''
-  potvrda.value = { tip, id: stavka._id, poruka: tip === 'kolegij' ? `Obrisati kolegij "${stavka.naziv}"?` : `Ukloniti ${stavka.redniBroj}. godinu?` }
+  potvrda.value = { tip, id: stavka._id, poruka: tip === 'kolegij' ? `Obrisati kolegij "${stavka.naziv}"? Obrisat će se i svi zapisi vezani uz njega.` : `Ukloniti ${stavka.redniBroj}. godinu?` }
 }
 
 async function potvrdiBrisanje() {
