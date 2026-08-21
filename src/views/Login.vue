@@ -1,9 +1,10 @@
 <script setup>
 import { ref } from "vue";
-import { useRouter } from "vue-router"; 
-import { useAuthStore } from "../stores/authStore.js"; 
+import { useRouter, useRoute } from "vue-router";
+import { useAuthStore } from "../stores/authStore.js";
 
 const router = useRouter();
+const route = useRoute();
 const authStore = useAuthStore();
 
 const email = ref(""); 
@@ -16,7 +17,7 @@ async function submitLogin() {
   obrada.value = true;
   try {
     await authStore.login({ email: email.value, password: password.value });
-    router.push("/dashboard"); 
+    router.push("/");
   } catch (error) {
     greska.value = error.response?.data?.errors?.[0]?.msg || error.response?.data?.message || "Pogrešan email ili lozinka";
   } finally {
@@ -29,6 +30,7 @@ async function submitLogin() {
   <div class="flex min-h-screen flex-col items-center justify-center px-4">
     <h1 class="mb-6 text-4xl font-bold text-[#b56a3d]">StudentTracker</h1>
      <p class="mb-6 text-center">Dobrodošli, prijavite se za nastavak</p>
+    <p v-if="route.query.poruka === 'lozinka'" class="mb-4 text-center font-medium text-green-700">Lozinka uspješno promijenjena — prijavite se ponovno.</p>
     <div class="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-8 shadow-lg">
       <form @submit.prevent="submitLogin" novalidate>
 
