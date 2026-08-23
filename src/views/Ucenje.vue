@@ -1,11 +1,13 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { Play, Square, Trash2 } from 'lucide-vue-next'
 import api from '../services/api.js'
 import ConfirmDelete from '../components/ConfirmDelete.vue'
 import { useAuthStore } from '../stores/authStore.js'
+import { useTimerStore } from '../stores/timerStore.js'
 
 const authStore = useAuthStore()
+const timer = useTimerStore()
 const mojUsername = authStore.korisnik.username
 
 const sesije = ref([])
@@ -14,7 +16,6 @@ const ljestvica = ref([])
 const greska = ref('')
 const greskaBrisanja = ref('')
 const potvrdaBrisanja = ref(null)
-const odabraniKolegij = ref('') 
 
 async function dohvatiSesije() {
   greska.value = ''
@@ -36,43 +37,31 @@ async function dohvatiKolegije() {
   }
 }
 
-const pocetak = ref(null) // null = timer ne radi
-const proteklo = ref(0) // sekunde
-let interval = null
-
-const prikazVremena = computed(() => new Date(proteklo.value * 1000).toISOString().substring(11, 19))
 const minuteTekst = (m) => `${Math.floor(m / 60) ? Math.floor(m / 60) + ' h ' : ''}${m % 60 ? m % 60 + ' min' : ''}`.trim() || '0 min'
 
-const pokreniSat = () => {
-  interval = setInterval(() => { proteklo.value = Math.floor((Date.now() - pocetak.value) / 1000) }, 1000)}
-const startaj = () => { pocetak.value = Date.now(), proteklo.value = 0, pokreniSat()}
-
+// mjerenje vremena je u timerStoreu, stranica samo sprema gotovu sesiju
 async function zaustavi() {
-  clearInterval(interval)
+  timer.zaustavi()
   greska.value = ''
-  if (proteklo.value < 60) {
+  if (timer.proteklo < 60) {
     greska.value = 'Sesije kraće od minute se ne spremaju'
-    pocetak.value = null
-    proteklo.value = 0
+    timer.resetiraj()
     return
   }
   try {
     await api.post('/ucenje', {
-      pocetak: new Date(pocetak.value).toISOString(),
+      pocetak: new Date(timer.pocetak).toISOString(),
       kraj: new Date().toISOString(),
-      kolegijId: odabraniKolegij.value || null,
+      kolegijId: timer.kolegijId || null,
     })
     await dohvatiSesije()
     await dohvatiLjestvicu()
-    pocetak.value = null
-    proteklo.value = 0
+    timer.resetiraj()
   } catch (error) {
     greska.value = error.response?.data?.errors?.[0]?.msg || error.response?.data?.message || 'Greška pri spremanju sesije'
-    pokreniSat()
+    timer.pokreniSat()
   }
 }
-
-onUnmounted(() => clearInterval(interval))
 
 const nazivKolegija = (id) => (id ? kolegiji.value.find((kolegij) => kolegij._id === id)?.naziv || 'Nepoznat kolegij' : 'Bez kolegija')
 const formatDatum = (datum) => new Date(datum).toLocaleDateString('hr-HR')
@@ -122,17 +111,17 @@ onMounted(() => {
       <!-- timer -->
       <div class="lg:col-span-2">
         <div class="mb-6 rounded-xl border border-gray-200 bg-white px-8 py-12 text-center">
-          <p class="font-mono text-5xl font-bold text-gray-900">{{ prikazVremena }}</p>
+          <p class="font-mono text-5xl font-bold text-gray-900">{{ timer.prikazVremena }}</p>
 
           <div class="mx-auto mt-8 flex max-w-md items-center justify-center gap-3">
-            <select v-model="odabraniKolegij" :disabled="!!pocetak" class="input mt-0! w-48!">
+            <select v-model="timer.kolegijId" :disabled="!!timer.pocetak" class="input mt-0! w-48!">
               <option value="">Bez kolegija</option>
               <option v-for="kolegij in kolegiji" :key="kolegij._id" :value="kolegij._id">{{ kolegij.naziv }}</option>
             </select>
-            <button v-if="!pocetak" @click="startaj" class="btn btn-primary flex items-center gap-2 px-6 py-2.5"><Play :size="16" fill="currentColor" /> Počni učiti</button>
+            <button v-if="!timer.pocetak" @click="timer.startaj" class="btn btn-primary flex items-center gap-2 px-6 py-2.5"><Play :size="16" fill="currentColor" /> Počni učiti</button>
             <button v-else @click="zaustavi" class="btn flex items-center gap-1.5 bg-red-700 text-white hover:bg-red-800"><Square :size="15" fill="currentColor" /> Prestani učiti</button>
           </div>
-          <p class="mt-4 text-xs text-gray-500">Odlaskom na drugu stranicu učenje se prekida i sesija se ne sprema.</p>
+          <p class="mt-4 text-xs text-gray-500">Timer radi i dok si na drugim stranicama, vidiš ga u izborniku. Klikom na njega vraćaš se na ovu stranicu.</p>
         </div>
         <!-- moje sesije -->
         <div class="rounded-xl border border-gray-200 bg-white">

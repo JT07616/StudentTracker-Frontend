@@ -3,9 +3,11 @@ import { computed } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { LogOut, LayoutDashboard, Users, CheckSquare, BookOpen, Timer, Settings } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/authStore.js'
+import { useTimerStore } from '../stores/timerStore.js'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const timer = useTimerStore()
 
 // ikone i putanje koje se koriste u navigaciji sidebara
 const navItems = [
@@ -22,6 +24,8 @@ const korisnikInitials = computed(() => {
 })
 
 function odjava() {
+  timer.zaustavi()
+  timer.resetiraj()
   authStore.logout()
   router.push('/login')
 }
@@ -42,6 +46,10 @@ function odjava() {
         </a>
       </RouterLink>
     </nav>
+    <!-- mini timer od ucenja - klik vodi na stranicu -->
+    <RouterLink v-if="timer.pocetak" to="/ucenje" class="mx-3 mb-1 flex items-center gap-3 rounded-lg bg-brown/25 px-3 py-2.5 text-sm font-medium text-black">
+      <Timer class="h-4 w-4 shrink-0" /><span>Učenje</span><span class="ml-auto font-mono">{{ timer.prikazVremena }}</span>
+    </RouterLink>
     <!-- Profil -->
     <div class="px-3 py-2">
       <div class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-black">
