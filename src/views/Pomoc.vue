@@ -86,11 +86,14 @@ async function potvrdiPrihvat() {
 // rijeseno <-> u tijeku 
 async function promijeniRijeseno(id) {
   greska.value = ''
+  obrada.value = true
   try {
     await api.patch(`/pomoc/${id}/rijesi`)
     await dohvatiZahtjeve()
   } catch (error) {
     greska.value = error.response?.data?.message || 'Greška pri promjeni statusa'
+  } finally {
+    obrada.value = false
   }
 }
 
@@ -109,11 +112,7 @@ async function potvrdiBrisanje() {
   }
 }
 
-const vrijemeTekst = (datum) => {
-  const dana = Math.round((new Date().setHours(0, 0, 0, 0) - new Date(datum).setHours(0, 0, 0, 0)) / (1000 * 60 * 60 * 24))
-  if (dana === 0) return 'danas'
-  return `prije ${dana} ${dana === 1 ? 'dan' : 'dana'}`
-}
+const formatDatum = (datum) => new Date(datum).toLocaleDateString('hr-HR')
 
 onMounted(dohvatiZahtjeve)
 </script>
@@ -138,7 +137,7 @@ onMounted(dohvatiZahtjeve)
           <div class="flex-1">
             <p class="min-w-0 font-medium break-words text-gray-900">{{ zahtjev.naslov }}</p>
             <p v-if="zahtjev.opis" class="mt-0.5 text-sm break-words text-gray-700">{{ zahtjev.opis }}</p>
-            <p class="mt-1 text-xs"><strong class="font-medium text-gray-600">{{ zahtjev.autorUsername }}</strong>, <span class="text-brown/70">{{ vrijemeTekst(zahtjev.createdAt) }}</span></p>
+            <p class="mt-1 text-xs"><strong class="font-medium text-gray-600">{{ zahtjev.autorUsername }}</strong>, <span class="text-brown/70">{{ formatDatum(zahtjev.createdAt) }}</span></p>
           </div>
           <button @click="openPrihvat(zahtjev)" class="btn btn-primary shrink-0 text-sm">Pomoći ću</button>
         </div>
@@ -162,7 +161,7 @@ onMounted(dohvatiZahtjeve)
               <div class="flex items-start gap-2">
                 <p class="min-w-0 flex-1 font-medium break-words text-gray-900">{{ zahtjev.naslov }}</p>
                 <div class="flex items-center text-gray-400">
-                  <button @click="openEdit(zahtjev)" title="Uredi zahtjev" class="p-1 hover:text-gray-700"><Pencil :size="14" /></button>
+                  <button v-if="zahtjev.status === 'otvoren'" @click="openEdit(zahtjev)" title="Uredi zahtjev" class="p-1 hover:text-gray-700"><Pencil :size="14" /></button>
                   <button v-if="zahtjev.status !== 'prihvacen'" @click="zatraziBrisanje(zahtjev)" title="Obriši zahtjev" class="p-1 hover:text-red-600"><Trash2 :size="14" /></button>
                 </div>
               </div>
@@ -173,12 +172,12 @@ onMounted(dohvatiZahtjeve)
                   <p class="text-gray-900">Pomaže ti <strong>{{ zahtjev.pomagacUsername }}</strong></p>
                   <p class="mt-0.5 break-words"><b>kontakt:</b> {{ zahtjev.kontakt }}</p>
                 </div>
-                <button @click="promijeniRijeseno(zahtjev._id)" class="mt-2 w-full rounded-lg bg-green-600 py-1.5 text-sm font-medium text-white hover:bg-green-700">Označi kao riješeno</button>
+                <button @click="promijeniRijeseno(zahtjev._id)" :disabled="obrada" class="mt-2 w-full rounded-lg bg-green-600 py-1.5 text-sm font-medium text-white hover:bg-green-700">Označi kao riješeno</button>
               </template>
               <template v-else>
                 <div class="mt-2.5 flex items-center gap-2">
                   <p class="flex-1 text-sm text-green-700">Riješeno uz pomoć <strong>{{ zahtjev.pomagacUsername }}</strong>.</p>
-                  <button @click="promijeniRijeseno(zahtjev._id)" class="rounded-lg border border-brown/25 bg-brown/10 px-2.5 py-1 text-xs font-medium text-brown hover:bg-brown/25">Vrati u tijek</button>
+                  <button @click="promijeniRijeseno(zahtjev._id)" :disabled="obrada" class="rounded-lg border border-brown/25 bg-brown/10 px-2.5 py-1 text-xs font-medium text-brown hover:bg-brown/25">Vrati u tijek</button>
                 </div>
               </template>
             </div>
@@ -198,7 +197,7 @@ onMounted(dohvatiZahtjeve)
           <div v-for="zahtjev in pomazemFiltrirani" :key="zahtjev._id" class="border-b border-gray-100 px-4 py-3 last:border-b-0">
             <div class="flex items-baseline justify-between gap-2">
               <p class="min-w-0 font-medium break-words text-gray-900">{{ zahtjev.naslov }}</p>
-              <p class="shrink-0 text-xs"><strong class="font-medium text-gray-600">{{ zahtjev.autorUsername }}</strong>, <span class="text-brown/70">{{ vrijemeTekst(zahtjev.createdAt) }}</span></p>
+              <p class="shrink-0 text-xs"><strong class="font-medium text-gray-600">{{ zahtjev.autorUsername }}</strong>, <span class="text-brown/70">{{ formatDatum(zahtjev.createdAt) }}</span></p>
             </div>
             <p v-if="zahtjev.opis" class="mt-0.5 text-sm break-words text-gray-600">{{ zahtjev.opis }}</p>
 

@@ -11,11 +11,13 @@ api.interceptors.request.use((config) => {
 })
 
 api.interceptors.response.use(
-  response => response,
-  error => {
+  (response) => response,
+  (error) => {
     if (error.response?.status === 401 && !error.config.url.includes('/auth/')) {
       localStorage.removeItem('jwt_token')
       localStorage.removeItem('korisnik')
+      localStorage.removeItem('timer_pocetak')
+      localStorage.removeItem('timer_kolegij')
       window.location.href = '/login'
     }
     return Promise.reject(error)

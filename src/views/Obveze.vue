@@ -36,8 +36,11 @@ async function dohvatiKolegije() {
 }
 
 async function dodajObvezu() {
-  if (!noviNaziv.value.trim() || !noviKolegijId.value) return
   greska.value = ''
+  if (!noviNaziv.value.trim() || !noviKolegijId.value) {
+    greska.value = 'Odaberi kolegij i upiši naziv obveze'
+    return
+  }
   obrada.value = true
   try {
     await api.post('/obveze', {
@@ -62,6 +65,7 @@ async function promijeniGotovo(obveza) {
     await dohvatiObveze()
   } catch (error) {
     greska.value = error.response?.data?.message || 'Greška pri promjeni statusa'
+    await dohvatiObveze() // vrati kvacicu na stvarno stanje iz baze
   }
 }
 
