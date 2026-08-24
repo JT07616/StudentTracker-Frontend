@@ -176,7 +176,7 @@ onMounted(dohvatiZahtjeve)
               </template>
               <template v-else>
                 <div class="mt-2.5 flex items-center gap-2">
-                  <p class="flex-1 text-sm text-green-700">Riješeno uz pomoć <strong>{{ zahtjev.pomagacUsername }}</strong>.</p>
+                  <span class="h-2 w-2 shrink-0 rounded-full bg-green-500"></span><p class="flex-1 text-sm text-green-700">Riješeno uz pomoć <strong>{{ zahtjev.pomagacUsername }}</strong>.</p>
                   <button @click="promijeniRijeseno(zahtjev._id)" :disabled="obrada" class="rounded-lg border border-brown/25 bg-brown/10 px-2.5 py-1 text-xs font-medium text-brown hover:bg-brown/25">Vrati u tijek</button>
                 </div>
               </template>

@@ -27,8 +27,8 @@ async function submitLogin() {
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col items-center justify-center px-4">
-    <h1 class="mb-6 text-4xl font-bold text-[#b56a3d]">StudentTracker</h1>
+  <div class="flex min-h-full flex-col items-center justify-center px-4">
+    <img src="/logo.svg" alt="StudentTracker" class="mb-6 w-80" />
      <p class="mb-6 text-center">Dobrodošli, prijavite se za nastavak</p>
     <p v-if="route.query.poruka === 'lozinka'" class="mb-4 text-center font-medium text-green-700">Lozinka uspješno promijenjena — prijavite se ponovno.</p>
     <div class="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-8 shadow-lg">

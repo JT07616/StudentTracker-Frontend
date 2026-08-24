@@ -34,8 +34,8 @@ function odjava() {
 <template>
   <aside class="flex h-screen w-60 shrink-0 flex-col border-r border-brown/25 bg-brown/10 text-gray-900 shadow-xl">
     <!-- Header -->
-    <div class="p-5">
-      <h1 class="text-base font-bold text-amber-950">StudentTracker</h1>
+    <div class="px-5 pt-5 pb-3">
+      <img src="/logo.svg" alt="StudentTracker" class="w-11/12" />
     </div>
     <!-- Navigacija -->
     <nav class="flex-1 space-y-1 px-3">
@@ -57,7 +57,7 @@ function odjava() {
       </div>
     </div>
     <!-- Odjava -->
-    <div class="border-t border-brown/25 p-3">
+    <div class="flex h-[52px] items-center border-t border-brown/25 px-3">
       <button @click="odjava" class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-black transition-colors hover:bg-brown/25">
         <LogOut class="h-4 w-4 shrink-0" /><span>Odjava</span>
       </button>
