@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { User, Mail } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/authStore.js'
@@ -13,6 +13,30 @@ const novaLozinka = ref('')
 const ponoviLozinku = ref('')
 const greska = ref('')
 const obrada = ref(false)
+const prikaziLjestvica = ref(true)
+const greskaLjestv = ref('')
+
+async function dohvatiProfil() {
+  greskaLjestv.value = ''
+  try {
+    const { data } = await api.get('/auth/me')
+    prikaziLjestvica.value = data.showOnLeaderboard
+  } catch (error) {
+    greskaLjestv.value = error.response?.data?.message || 'Greška pri dohvaćanju profila'
+  }
+}
+
+async function promijeniVidljivost() {
+  greskaLjestv.value = ''
+  try {
+    await api.patch('/auth/ljestvica', { showOnLeaderboard: prikaziLjestvica.value })
+  } catch (error) {
+    greskaLjestv.value = error.response?.data?.errors?.[0]?.msg || error.response?.data?.message || 'Greška pri spremanju postavke'
+    prikaziLjestvica.value = !prikaziLjestvica.value 
+  }
+}
+
+onMounted(dohvatiProfil)
 
 async function promijeniLozinku() {
   greska.value = ''
@@ -54,7 +78,15 @@ async function promijeniLozinku() {
         <span class="text-sm text-gray-700">Email:</span> <span class="ml-auto text-sm font-medium">{{ authStore.korisnik?.email }}</span>
       </div>
     </div>
-
+    <!-- patch za vidljivost na ljestivic -->
+    <div class="mb-6 max-w-md rounded-xl border border-gray-200 bg-white p-6">
+      <label class="flex cursor-pointer items-center gap-3">
+        <input v-model="prikaziLjestvica" @change="promijeniVidljivost" type="checkbox" class="h-4 w-4 accent-brown" />
+        <span class="text-sm font-medium text-gray-900">Prikaži me na ljestvici učenja</span>
+      </label>
+      <p class="mt-2 text-xs text-gray-500">Ako isključiš, kolege te ne vide na tjednoj ljestvici, a sesije ostaju samo tebi.</p>
+      <p v-if="greskaLjestv" class="mt-2 text-sm text-red-600">{{ greskaLjestv }}</p>
+    </div>
     <!-- promjena lozinke -->
     <form @submit.prevent="promijeniLozinku" novalidate class="max-w-md rounded-xl border border-gray-200 bg-white p-6">
       <h2 class="mb-4 text-lg font-bold text-gray-900">Promjena lozinke</h2>
