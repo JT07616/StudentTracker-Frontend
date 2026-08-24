@@ -12,6 +12,8 @@ const greska = ref('')
 const greskaBrisanja = ref('')
 const obrada = ref(false)
 const potvrda = ref(null) // za brisanje
+const filterStatus = ref('') // '' = svi statusi
+const filterPomazem = ref('')
 const forma = reactive({ prikazi: false, id: null, naslov: '', opis: '', greska: ''})
 const prihvat = reactive({zahtjev: null, kontakt: '',greska: ''})
 
@@ -33,7 +35,9 @@ function openEdit(zahtjev) {
 const mojZahtjev = (zahtjev) => zahtjev.autorId === authStore.korisnik.id
 const otvoreniTudji = computed(() => zahtjevi.value.filter((zahtjev) => zahtjev.status === 'otvoren' && !mojZahtjev(zahtjev)))
 const moji = computed(() => zahtjevi.value.filter(mojZahtjev))
+const mojiFiltrirani = computed(() => (filterStatus.value ? moji.value.filter((zahtjev) => zahtjev.status === filterStatus.value) : moji.value))
 const pomazem = computed(() => zahtjevi.value.filter((zahtjev) => zahtjev.pomagacId === authStore.korisnik.id))
+const pomazemFiltrirani = computed(() => (filterPomazem.value ? pomazem.value.filter((zahtjev) => zahtjev.status === filterPomazem.value) : pomazem.value))
 
 async function dohvatiZahtjeve() {
   greska.value = ''
@@ -143,18 +147,23 @@ onMounted(dohvatiZahtjeve)
       <div>
         <button @click="openForma()" class="btn btn-primary mb-4 flex w-full items-center justify-center gap-1.5"><Plus :size="16" /> Trebam pomoć</button>
         <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-          <div class="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-4 py-2.5">
+          <div class="flex items-center justify-between gap-3 border-b border-gray-200 bg-gray-50 px-4 py-2.5">
             <p class="font-medium text-gray-900">Moji zahtjevi</p>
-            <p class="text-sm text-gray-500">{{ moji.length }}</p>
+            <select v-model="filterStatus" class="input mt-0! w-36! py-1!">
+              <option value="">Svi ({{ moji.length }})</option>
+              <option value="otvoren">Na čekanju</option>
+              <option value="prihvacen">U tijeku</option>
+              <option value="rijesen">Riješeno</option>
+            </select>
           </div>
-          <p v-if="!moji.length" class="px-4 py-6 text-center text-sm text-gray-500">Još nemaš zahtjeva</p>
-          <div v-if="moji.length" class="space-y-3 p-3">
-            <div v-for="zahtjev in moji" :key="zahtjev._id" class="rounded-lg border border-gray-200 bg-gray-50 p-3">
+          <p v-if="!mojiFiltrirani.length" class="px-4 py-6 text-center text-sm text-gray-500">{{ filterStatus ? 'Nema zahtjeva s tim statusom' : 'Još nemaš zahtjeva' }}</p>
+          <div v-if="mojiFiltrirani.length" class="space-y-3 p-3">
+            <div v-for="zahtjev in mojiFiltrirani" :key="zahtjev._id" class="rounded-lg border border-gray-200 bg-gray-50 p-3">
               <div class="flex items-start gap-2">
                 <p class="min-w-0 flex-1 font-medium break-words text-gray-900">{{ zahtjev.naslov }}</p>
                 <div class="flex items-center text-gray-400">
-                  <button @click="openEdit(zahtjev)" class="p-1 hover:text-gray-700"><Pencil :size="14" /></button>
-                  <button v-if="zahtjev.status !== 'prihvacen'" @click="zatraziBrisanje(zahtjev)" class="p-1 hover:text-red-600"><Trash2 :size="14" /></button>
+                  <button @click="openEdit(zahtjev)" title="Uredi zahtjev" class="p-1 hover:text-gray-700"><Pencil :size="14" /></button>
+                  <button v-if="zahtjev.status !== 'prihvacen'" @click="zatraziBrisanje(zahtjev)" title="Obriši zahtjev" class="p-1 hover:text-red-600"><Trash2 :size="14" /></button>
                 </div>
               </div>
               <p v-if="zahtjev.opis" class="mt-0.5 text-sm break-words text-gray-600 ">{{ zahtjev.opis }}</p>
@@ -167,18 +176,26 @@ onMounted(dohvatiZahtjeve)
                 <button @click="promijeniRijeseno(zahtjev._id)" class="mt-2 w-full rounded-lg bg-green-600 py-1.5 text-sm font-medium text-white hover:bg-green-700">Označi kao riješeno</button>
               </template>
               <template v-else>
-                <p class="mt-2.5 text-sm text-green-700">Riješeno uz pomoć {{ zahtjev.pomagacUsername }}.</p>
-                <button @click="promijeniRijeseno(zahtjev._id)" class="mt-2 w-full rounded-lg border border-brown/25 bg-brown/10 py-1.5 text-xs font-medium text-brown hover:bg-brown/25">Vrati u tijek</button>
+                <div class="mt-2.5 flex items-center gap-2">
+                  <p class="flex-1 text-sm text-green-700">Riješeno uz pomoć <strong>{{ zahtjev.pomagacUsername }}</strong>.</p>
+                  <button @click="promijeniRijeseno(zahtjev._id)" class="rounded-lg border border-brown/25 bg-brown/10 px-2.5 py-1 text-xs font-medium text-brown hover:bg-brown/25">Vrati u tijek</button>
+                </div>
               </template>
             </div>
           </div>
         </div>
         <div v-if="pomazem.length" class="mt-4 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-          <div class="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-4 py-2.5">
+          <div class="flex items-center justify-between gap-3 border-b border-gray-200 bg-gray-50 px-4 py-2.5">
             <p class="font-medium text-gray-900">Pomažem</p>
-            <p class="text-sm text-gray-500">{{ pomazem.length }}</p>
+            <select v-model="filterPomazem" class="input mt-0! w-36! py-1!">
+              <option value="">Svi ({{ pomazem.length }})</option>
+              <option value="prihvacen">U tijeku</option>
+              <option value="rijesen">Riješeno</option>
+            </select>
           </div>
-          <div v-for="zahtjev in pomazem" :key="zahtjev._id" class="border-b border-gray-100 px-4 py-3 last:border-b-0">
+
+          <p v-if="!pomazemFiltrirani.length" class="px-4 py-6 text-center text-sm text-gray-500">Nema zahtjeva s tim statusom</p>
+          <div v-for="zahtjev in pomazemFiltrirani" :key="zahtjev._id" class="border-b border-gray-100 px-4 py-3 last:border-b-0">
             <div class="flex items-baseline justify-between gap-2">
               <p class="min-w-0 font-medium break-words text-gray-900">{{ zahtjev.naslov }}</p>
               <p class="shrink-0 text-xs"><strong class="font-medium text-gray-600">{{ zahtjev.autorUsername }}</strong>, <span class="text-brown/70">{{ vrijemeTekst(zahtjev.createdAt) }}</span></p>

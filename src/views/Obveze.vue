@@ -166,7 +166,7 @@ onMounted(() => {
             <Check v-if="obveza.gotovo" :size="16" class="text-green-600" />
             <p v-if="obveza.gotovo" class="text-xs text-gray-500">{{ rijesenoTekst(obveza.updatedAt) }}</p>
             <p v-else-if="obveza.rok" class="text-sm" :class="daniDo(obveza.rok) < 0 ? 'font-medium text-red-600' : daniDo(obveza.rok) === 0 ? 'font-bold text-red-600' : 'text-gray-700'">{{ rokTekst(obveza.rok) }}</p>
-            <button @click="zatraziBrisanje(obveza)" class="rounded-lg border border-gray-200 p-1.5 text-red-600 hover:bg-red-50"><Trash2 :size="14" /></button>
+            <button @click="zatraziBrisanje(obveza)" title="Obriši obvezu" class="rounded-lg border border-gray-200 p-1.5 text-red-600 hover:bg-red-50"><Trash2 :size="14" /></button>
           </div>
         </div>
       </div>

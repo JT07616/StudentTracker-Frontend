@@ -213,8 +213,8 @@ onMounted(() => {
               <td class="px-2 py-3" :class="kolegij.ispitniRok && rokProsao(kolegij.ispitniRok) ? 'text-red-600' : 'text-gray-700'">{{ kolegij.ispitniRok ? formatDatum(kolegij.ispitniRok) : '–' }}</td>
               <td class="px-2 py-3">
                 <div class="flex gap-1">
-                  <button @click="openEditKolegij(kolegij)" class="rounded-lg border border-gray-200 p-1.5 text-gray-700 hover:bg-gray-50"><Pencil :size="14" /></button>
-                  <button @click="zatraziBrisanje('kolegij', kolegij)" class="rounded-lg border border-gray-200 p-1.5 text-red-600 hover:bg-red-50"><Trash2 :size="14" /></button>
+                  <button @click="openEditKolegij(kolegij)" title="Uredi kolegij" class="rounded-lg border border-gray-200 p-1.5 text-gray-700 hover:bg-gray-50"><Pencil :size="14" /></button>
+                  <button @click="zatraziBrisanje('kolegij', kolegij)" title="Obriši kolegij" class="rounded-lg border border-gray-200 p-1.5 text-red-600 hover:bg-red-50"><Trash2 :size="14" /></button>
                 </div>
               </td>
             </tr>

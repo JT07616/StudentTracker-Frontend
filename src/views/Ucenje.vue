@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { Play, Square, Trash2 } from 'lucide-vue-next'
 import api from '../services/api.js'
 import ConfirmDelete from '../components/ConfirmDelete.vue'
@@ -16,6 +16,7 @@ const ljestvica = ref([])
 const greska = ref('')
 const greskaBrisanja = ref('')
 const potvrdaBrisanja = ref(null)
+const filterKolegij = ref('') // '' = svi kolegiji
 
 async function dohvatiSesije() {
   greska.value = ''
@@ -38,6 +39,10 @@ async function dohvatiKolegije() {
 }
 
 const minuteTekst = (m) => `${Math.floor(m / 60) ? Math.floor(m / 60) + ' h ' : ''}${m % 60 ? m % 60 + ' min' : ''}`.trim() || '0 min'
+
+// popis se filtrira po kolegiju, a zbroj prati ono sto je prikazano
+const prikazaneSesije = computed(() => (filterKolegij.value ? sesije.value.filter((sesija) => sesija.kolegijId === filterKolegij.value) : sesije.value))
+const ukupnoFiltrirano = computed(() => prikazaneSesije.value.reduce((zbroj, sesija) => zbroj + sesija.trajanjeMin, 0))
 
 // mjerenje vremena je u timerStoreu, stranica samo sprema gotovu sesiju
 async function zaustavi() {
@@ -125,16 +130,22 @@ onMounted(() => {
         </div>
         <!-- moje sesije -->
         <div class="rounded-xl border border-gray-200 bg-white">
-          <p class="border-b border-gray-200 px-4 py-3 font-medium text-gray-900">Moje sesije</p>
+          <div class="flex items-center justify-between gap-3 border-b border-gray-200 px-4 py-3">
+            <p class="font-medium text-gray-900">Moje sesije<span v-if="filterKolegij" class="ml-2 text-sm font-normal text-gray-500">ukupno {{ minuteTekst(ukupnoFiltrirano) }}</span></p>
+            <select v-model="filterKolegij" class="input mt-0! w-48!">
+              <option value="">Svi kolegiji</option>
+              <option v-for="kolegij in kolegiji" :key="kolegij._id" :value="kolegij._id">{{ kolegij.naziv }}</option>
+            </select>
+          </div>
 
-          <p v-if="!sesije.length" class="px-4 py-8 text-center text-sm text-gray-500">Još nemaš sesija — pokreni timer</p>
-          <div v-for="sesija in sesije" :key="sesija._id" class="flex items-center gap-3 border-b border-gray-100 px-4 py-3 last:border-b-0">
+          <p v-if="!prikazaneSesije.length" class="px-4 py-8 text-center text-sm text-gray-500">{{ filterKolegij ? 'Nema sesija za taj kolegij' : 'Još nemaš sesija — pokreni timer' }}</p>
+          <div v-for="sesija in prikazaneSesije" :key="sesija._id" class="flex items-center gap-3 border-b border-gray-100 px-4 py-3 last:border-b-0">
             <div class="flex-1">
               <p class="text-gray-900">{{ nazivKolegija(sesija.kolegijId) }}</p>
               <p class="text-xs text-gray-500">{{ formatDatum(sesija.pocetak) }}</p>
             </div>
             <p class="text-sm font-medium text-gray-900">{{ minuteTekst(sesija.trajanjeMin) }}</p>
-            <button @click="zatraziBrisanje(sesija)" class="p-1 text-gray-400 hover:text-red-600"><Trash2 :size="14" /></button>
+            <button @click="zatraziBrisanje(sesija)" title="Obriši sesiju" class="p-1 text-gray-400 hover:text-red-600"><Trash2 :size="14" /></button>
           </div>
         </div>
       </div>
