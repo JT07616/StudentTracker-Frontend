@@ -68,6 +68,8 @@ async function zaustavi() {
   }
 }
 
+const nepolozeni = computed(() => kolegiji.value.filter((kolegij) => kolegij.status !== 'polozen'))
+const kolegijiSesija = computed(() => kolegiji.value.filter((kolegij) => sesije.value.some((sesija) => sesija.kolegijId === kolegij._id)))
 const nazivKolegija = (id) => (id ? kolegiji.value.find((kolegij) => kolegij._id === id)?.naziv || 'Nepoznat kolegij' : 'Bez kolegija')
 const formatDatum = (datum) => new Date(datum).toLocaleDateString('hr-HR')
 
@@ -79,6 +81,7 @@ function zatraziBrisanje(sesija) {
 async function potvrdiBrisanje() {
   try {
     await api.delete(`/ucenje/${potvrdaBrisanja.value.id}`)
+    filterKolegij.value = '' // sesija je mozda bila zadnja na tom kolegiju
     await dohvatiSesije()
     await dohvatiLjestvicu()
     potvrdaBrisanja.value = null
@@ -121,7 +124,7 @@ onMounted(() => {
           <div class="mx-auto mt-8 flex max-w-md items-center justify-center gap-3">
             <select v-model="timer.kolegijId" :disabled="!!timer.pocetak" class="input mt-0! w-48!">
               <option value="">Bez kolegija</option>
-              <option v-for="kolegij in kolegiji" :key="kolegij._id" :value="kolegij._id">{{ kolegij.naziv }}</option>
+              <option v-for="kolegij in nepolozeni" :key="kolegij._id" :value="kolegij._id">{{ kolegij.naziv }}</option>
             </select>
             <button v-if="!timer.pocetak" @click="timer.startaj" class="btn btn-primary flex items-center gap-2 px-6 py-2.5"><Play :size="16" fill="currentColor" /> Počni učiti</button>
             <button v-else @click="zaustavi" :disabled="obrada" class="btn flex items-center gap-1.5 bg-red-700 text-white hover:bg-red-800"><Square :size="15" fill="currentColor" /> Prestani učiti</button>
@@ -135,7 +138,7 @@ onMounted(() => {
             <p class="font-medium text-gray-900">Moje sesije<span v-if="filterKolegij" class="ml-2 text-sm font-normal text-gray-500">ukupno {{ minuteTekst(ukupnoFiltrirano) }}</span></p>
             <select v-model="filterKolegij" class="input mt-0! w-48!">
               <option value="">Svi kolegiji</option>
-              <option v-for="kolegij in kolegiji" :key="kolegij._id" :value="kolegij._id">{{ kolegij.naziv }}</option>
+              <option v-for="kolegij in kolegijiSesija" :key="kolegij._id" :value="kolegij._id">{{ kolegij.naziv }}</option>
             </select>
           </div>
           <div v-if="!prikazaneSesije.length" class="px-4 py-8 text-center">
@@ -148,7 +151,7 @@ onMounted(() => {
               <p class="text-xs text-gray-500">{{ formatDatum(sesija.pocetak) }}</p>
             </div>
             <p class="text-sm font-medium text-gray-900">{{ minuteTekst(sesija.trajanjeMin) }}</p>
-            <button @click="zatraziBrisanje(sesija)" title="Obriši sesiju" class="p-1 text-gray-400 hover:text-red-600"><Trash2 :size="14" /></button>
+            <button @click="zatraziBrisanje(sesija)" title="Obriši sesiju" class="rounded-lg border border-gray-200 p-1.5 text-red-600 hover:bg-red-50"><Trash2 :size="14" /></button>
           </div>
         </div>
       </div>
@@ -156,7 +159,6 @@ onMounted(() => {
       <div class="rounded-xl border border-gray-200 bg-white">
         <p class="border-b border-gray-200 px-4 py-3 font-medium text-gray-900">Ljestvica ovog tjedna</p>
         <p v-if="!ljestvica.length" class="px-4 py-8 text-center text-sm text-gray-500">Još nitko nije učio ovaj tjedan</p>
-
         <div v-for="(red, i) in ljestvica" :key="red.username" class="flex items-center gap-3 border-b border-gray-100 px-4 py-2.5 last:border-b-0" :class="red.username === mojUsername && 'bg-brown/5'">
           <span class="w-6 text-sm text-gray-500">{{ i + 1 }}.</span>
           <span class="flex h-7 w-7 items-center justify-center rounded-full bg-brown/15 text-xs font-bold text-brown">{{ red.username[0].toUpperCase() }}</span>

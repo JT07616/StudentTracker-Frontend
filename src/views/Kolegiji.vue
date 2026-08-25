@@ -53,6 +53,13 @@ const dostupneGodine = computed(() => {
   return [1, 2, 3, 4, 5, 6].filter((broj) => !zauzete.includes(broj))
 })
 
+const sada = new Date()
+const tekucaGodina = sada.getMonth() >= 9 ? sada.getFullYear() : sada.getFullYear() - 1
+const akademskeGodine = Array.from({ length: 12 }, (_, i) => `${tekucaGodina + 1 - i}./${String(tekucaGodina + 2 - i).slice(2)}.`)
+
+const filterGodina = ref('sve')
+const prikazaneGodine = computed(() => (filterGodina.value === 'sve' ? godine.value : godine.value.filter((godina) => godina.redniBroj === filterGodina.value)))
+
 function openFormaGodine() {
   noviRedniBroj.value = dostupneGodine.value[0] || null
   novaOznaka.value = ''
@@ -145,6 +152,7 @@ async function potvrdiBrisanje() {
       await dohvatiKolegije()
     } else {
       await api.delete(`/akademske-godine/${id}`)
+      filterGodina.value = 'sve' // da filter ne ostane na godini koje vise nema
       await dohvatiGodine()
     }
     potvrda.value = null
@@ -157,7 +165,8 @@ const kolegijiSemestra = (semestar) => kolegiji.value.filter((kolegij) => kolegi
 const polozeniEctsGodine = (godinaId) => kolegiji.value.filter((kolegij) => kolegij.godinaId === godinaId && kolegij.status === 'polozen').reduce((zbroj, kolegij) => zbroj + kolegij.ects, 0)
 
 const formatDatum = (datum) => new Date(datum).toLocaleDateString('hr-HR')
-const rokProsao = (datum) => new Date(datum) < new Date(new Date().setHours(0, 0, 0, 0))
+// crveno samo ako je rok prosao, a kolegij jos nije polozen
+const rokPropusten = (kolegij) => kolegij.ispitniRok && kolegij.status !== 'polozen' && new Date(kolegij.ispitniRok) < new Date(new Date().setHours(0, 0, 0, 0))
 
 onMounted(() => {
   dohvatiKolegije()
@@ -179,13 +188,20 @@ onMounted(() => {
       <img src="/kolegiji.svg" alt="" class="mx-auto mb-6 w-56" />
       <p class="mb-4">Dodaj prvu godinu i kreni s unosom kolegija.</p>
     </div>
+    <label v-if="godine.length > 1" class="mb-4 flex items-center gap-2">
+      <span><b>Prikaz:</b></span>
+      <select v-model="filterGodina" class="input mt-0! w-52! bg-white">
+        <option value="sve">Sve godine</option>
+        <option v-for="godina in godine" :key="godina._id" :value="godina.redniBroj">{{ godina.redniBroj }}. godina{{ godina.akademskaGodina ? ` (${godina.akademskaGodina})` : '' }}</option>
+      </select>
+    </label>
     <!-- godine -->
-    <div v-for="godina in godine" :key="godina._id" class="mb-8">
+    <div v-for="godina in prikazaneGodine" :key="godina._id" class="mb-8">
       <div class="mb-3 flex items-center gap-3">
         <h2 class="text-lg font-bold text-gray-900">{{ godina.redniBroj }}. godina</h2>
         <span v-if="godina.akademskaGodina" class="text-sm text-gray-700">{{ godina.akademskaGodina }}</span>
         <span class="text-sm text-gray-700">{{ polozeniEctsGodine(godina._id) }} ECTS položeno</span>
-        <button @click="zatraziBrisanje('godina', godina)" class="btn ml-auto flex items-center gap-1.5 border border-gray-300 text-sm text-gray-700 hover:border-red-300 hover:bg-red-50 hover:text-red-600" title="Ukloni godinu"><Trash2 :size="14" />Ukloni akademsku godinu</button>
+        <button @click="zatraziBrisanje('godina', godina)" class="btn ml-auto flex items-center gap-1.5 border border-gray-300 text-sm bg-white text-gray-700 hover:border-red-300 hover:bg-red-50 hover:text-red-600" title="Ukloni godinu"><Trash2 :size="14" />Ukloni akademsku godinu</button>
       </div>
       <!-- semestri -->
       <div v-for="semestar in [godina.redniBroj * 2 - 1, godina.redniBroj * 2]" :key="semestar" class="mb-4 rounded-xl border border-gray-200 bg-white">
@@ -213,7 +229,7 @@ onMounted(() => {
               <td class="px-2 py-3 text-center text-gray-700">{{ kolegij.ects }}</td>
               <td class="px-2 py-3"><span :class="kolegij.status === 'polozen' ? 'text-green-700' : 'text-brown'">{{ kolegij.status === 'polozen' ? 'Položen' : 'Upisan' }}</span></td>
               <td class="px-2 py-3 text-center text-gray-700">{{ kolegij.ocjena || '–' }}</td>
-              <td class="px-2 py-3" :class="kolegij.ispitniRok && rokProsao(kolegij.ispitniRok) ? 'text-red-600' : 'text-gray-700'">{{ kolegij.ispitniRok ? formatDatum(kolegij.ispitniRok) : '–' }}</td>
+              <td class="px-2 py-3" :class="rokPropusten(kolegij) ? 'text-red-600' : 'text-gray-700'">{{ kolegij.ispitniRok ? formatDatum(kolegij.ispitniRok) : '–' }}</td>
               <td class="px-2 py-3">
                 <div class="flex gap-1">
                   <button @click="openEditKolegij(kolegij)" title="Uredi kolegij" class="rounded-lg border border-gray-200 p-1.5 text-gray-700 hover:bg-gray-50"><Pencil :size="14" /></button>
@@ -274,7 +290,10 @@ onMounted(() => {
         </select>
 
         <label class="mt-4 block text-sm font-medium">Akademska godina (neobavezno)</label>
-        <input v-model="novaOznaka" placeholder="npr. 2025./26." class="input" />
+        <select v-model="novaOznaka" class="input">
+          <option value="">Bez oznake</option>
+          <option v-for="godina in akademskeGodine" :key="godina" :value="godina">{{ godina }}</option>
+        </select>
 
         <p v-if="greskaGodine" class="mt-3 text-sm text-red-600">{{ greskaGodine }}</p>
 

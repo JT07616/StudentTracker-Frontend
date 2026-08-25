@@ -37,15 +37,15 @@ async function dohvatiKolegije() {
 
 async function dodajObvezu() {
   greska.value = ''
-  if (!noviNaziv.value.trim() || !noviKolegijId.value) {
-    greska.value = 'Odaberi kolegij i upiši naziv obveze'
+  if (!noviNaziv.value.trim()) {
+    greska.value = 'Upiši naziv obveze'
     return
   }
   obrada.value = true
   try {
     await api.post('/obveze', {
       naziv: noviNaziv.value.trim(),
-      kolegijId: noviKolegijId.value,
+      kolegijId: noviKolegijId.value || null,
       rok: noviRok.value || null,
     })
     noviNaziv.value = ''
@@ -84,9 +84,9 @@ async function potvrdiBrisanje() {
   }
 }
 
-const nazivKolegija = (id) => kolegiji.value.find((kolegij) => kolegij._id === id)?.naziv || 'Nepoznat kolegij'
+const nepolozeni = computed(() => kolegiji.value.filter((kolegij) => kolegij.status !== 'polozen')) // na polozene kolegije vise se ne doaju obveze
+const nazivKolegija = (id) => (id ? kolegiji.value.find((kolegij) => kolegij._id === id)?.naziv || 'Nepoznat kolegij' : 'Bez kolegija')
 const daniDo = (datum) => Math.ceil((new Date(datum).setHours(0, 0, 0, 0) - new Date().setHours(0, 0, 0, 0)) / (1000 * 60 * 60 * 24))
-
 
 const rokTekst = (rok) => {
   const dana = daniDo(rok)
@@ -100,9 +100,7 @@ const rijesenoTekst = (datum) => {
   return dana === 0 ? 'riješeno danas' : `riješeno prije ${dana} ${dana === 1 ? 'dan' : 'dana'}`
 }
 
-const aktivne = computed(() =>
-  obveze.value.filter((obveza) => !obveza.gotovo).sort((a, b) => new Date(a.rok || '9999-01-01') - new Date(b.rok || '9999-01-01')),
-)
+const aktivne = computed(() => obveze.value.filter((obveza) => !obveza.gotovo).sort((a, b) => new Date(a.rok || '9999-01-01') - new Date(b.rok || '9999-01-01')))
 
 const grupe = computed(() => [
   { kljuc: 'kasnis', naslov: '🔴 Kasniš', lista: aktivne.value.filter((obveza) => obveza.rok && daniDo(obveza.rok) < 0), prazno: 'Ništa ne gori' },
@@ -129,27 +127,30 @@ onMounted(() => {
     <div class="mb-6">
       <h1 class="text-2xl font-bold text-gray-900">Obveze</h1>
     </div>
-
+    
     <p v-if="greska" class="mb-4 text-red-600">{{ greska }}</p>
 
-    <!-- bez kolegija nema obveza - vodi korisnika -->
-    <div v-if="!kolegiji.length" class="py-16 text-center text-gray-700">
+    <!-- unos -->
+    <form @submit.prevent="dodajObvezu" class="mb-6 flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3">
+      <select v-model="noviKolegijId" class="input mt-0! w-56!">
+        <option value="">Bez kolegija</option>
+        <option v-for="kolegij in nepolozeni" :key="kolegij._id" :value="kolegij._id">{{ kolegij.naziv }}</option>
+      </select>
+      <input v-model="noviNaziv" placeholder="Nova obveza, npr. Predati seminar..." class="input mt-0! flex-1" />
+      <input v-model="noviRok" type="date" class="input mt-0! w-40!" />
+      <button type="submit" :disabled="obrada" class="btn btn-primary flex items-center gap-1"><Plus :size="14" /> Dodaj</button>
+    </form>
+    <!-- bez obveza - vodi korisnika -->
+    <div v-if="!obveze.length" class="py-16 text-center text-gray-700">
       <img src="/obveze.svg" alt="" class="mx-auto mb-6 w-56" />
-      <p class="mb-4">Prvo dodaj kolegije da bi mogao unositi obveze.</p>
-      <RouterLink to="/kolegiji" class="btn btn-primary inline-block">Idi na Kolegije</RouterLink>
+      <p>Još nemaš obveza, upiši prvu u obrazac iznad.</p>
+      <template v-if="!kolegiji.length">
+        <p class="mb-4">Za obveze vezane uz kolegij prvo dodaj kolegije.</p>
+        <RouterLink to="/kolegiji" class="btn btn-primary inline-block">Idi na Kolegije</RouterLink>
+      </template>
     </div>
 
     <template v-else>
-      <!-- unos -->
-      <form @submit.prevent="dodajObvezu" class="mb-6 flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3">
-        <select v-model="noviKolegijId" class="input mt-0! w-56!">
-          <option value="" disabled>Kolegij</option>
-          <option v-for="kolegij in kolegiji" :key="kolegij._id" :value="kolegij._id">{{ kolegij.naziv }}</option>
-        </select>
-        <input v-model="noviNaziv" placeholder="Nova obveza, npr. Predati seminar..." class="input mt-0! flex-1" />
-        <input v-model="noviRok" type="date" class="input mt-0! w-40!" />
-        <button type="submit" :disabled="obrada" class="btn btn-primary flex items-center gap-1"><Plus :size="14" /> Dodaj</button>
-      </form>
       <!-- filteri -->
       <div class="mb-4 flex gap-2">
         <button @click="filter = 'sve'" :class="filter === 'sve' ? 'bg-brown text-white' : 'border border-gray-200 bg-white text-gray-700 hover:bg-gray-50'" class="btn text-sm">Sve obveze</button>

@@ -163,9 +163,9 @@ onMounted(dohvatiZahtjeve)
             <div v-for="zahtjev in mojiFiltrirani" :key="zahtjev._id" class="rounded-lg border border-gray-200 bg-gray-50 p-3">
               <div class="flex items-start gap-2">
                 <p class="min-w-0 flex-1 font-medium break-words text-gray-900">{{ zahtjev.naslov }}</p>
-                <div class="flex items-center text-gray-400">
-                  <button v-if="zahtjev.status === 'otvoren'" @click="openEdit(zahtjev)" title="Uredi zahtjev" class="p-1 hover:text-gray-700"><Pencil :size="14" /></button>
-                  <button v-if="zahtjev.status !== 'prihvacen'" @click="zatraziBrisanje(zahtjev)" title="Obriši zahtjev" class="p-1 hover:text-red-600"><Trash2 :size="14" /></button>
+                <div class="flex gap-1">
+                  <button v-if="zahtjev.status === 'otvoren'" @click="openEdit(zahtjev)" title="Uredi zahtjev" class="rounded-lg border border-gray-200 p-1.5 text-gray-700 hover:bg-gray-50"><Pencil :size="14" /></button>
+                  <button v-if="zahtjev.status !== 'prihvacen'" @click="zatraziBrisanje(zahtjev)" title="Obriši zahtjev" class="rounded-lg border border-gray-200 p-1.5 text-red-600 hover:bg-red-50"><Trash2 :size="14" /></button>
                 </div>
               </div>
               <p v-if="zahtjev.opis" class="mt-0.5 text-sm break-words text-gray-600 ">{{ zahtjev.opis }}</p>
