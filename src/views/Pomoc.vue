@@ -132,7 +132,10 @@ onMounted(dohvatiZahtjeve)
           <p class="text-sm text-gray-500">{{ otvoreniTudji.length }}</p>
         </div>
 
-        <p v-if="!otvoreniTudji.length" class="px-4 py-10 text-center text-sm text-gray-500">Trenutno nitko ne traži pomoć</p>
+        <div v-if="!otvoreniTudji.length" class="px-4 py-10 text-center">
+          <img src="/pomoc.svg" alt="" class="mx-auto mb-4 w-44" />
+          <p class="text-sm text-gray-500">Trenutno nitko ne traži pomoć</p>
+        </div>
         <div v-for="zahtjev in otvoreniTudji" :key="zahtjev._id" class="flex items-center gap-4 border-b border-gray-100 px-4 py-4 last:border-b-0">
           <div class="flex-1">
             <p class="min-w-0 font-medium break-words text-gray-900">{{ zahtjev.naslov }}</p>

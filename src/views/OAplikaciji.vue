@@ -11,9 +11,7 @@ const koraci = [
   <div class="mx-auto max-w-2xl p-8">
     <div class="mb-6">
       <h1 class="text-2xl font-bold text-gray-900">O aplikaciji</h1>
-      <p class="text-sm text-gray-700">StudentTracker ti pomaže pratiti kolegije, obveze i vrijeme koje provedeš učeći.</p>
     </div>
-    <!-- koraci za pocetak -->
     <div class="mb-4 rounded-xl border border-gray-200 bg-white">
       <p class="border-b border-gray-200 px-4 py-3 font-medium text-gray-900">Kako početi</p>
 
@@ -25,7 +23,6 @@ const koraci = [
         </div>
       </div>
     </div>
-    <!-- kratki opis stranica -->
     <div class="mb-4 rounded-xl border border-gray-200 bg-white">
       <p class="border-b border-gray-200 px-4 py-3 font-medium text-gray-900">Što gdje nađeš</p>
       <div class="space-y-1.5 px-4 py-3 text-sm text-gray-700">

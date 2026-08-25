@@ -15,7 +15,7 @@ const authStore = useAuthStore();
         <RouterView />
       </div>
       <!-- neprozirna boja + z-10 da sjena sidebara ne pada preko footera -->
-      <footer class="relative z-10 flex h-[52px] items-center justify-end border-t border-brown/25 bg-[#f6ede8] px-5">
+      <footer v-if="authStore.autoriziran" class="relative z-10 flex h-[52px] items-center justify-end border-t border-brown/25 bg-[#f6ede8] px-5">
         <RouterLink to="/o-aplikaciji" class="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium text-amber-950 transition-colors hover:bg-brown/25">
           <Info :size="15" /> O aplikaciji
         </RouterLink>

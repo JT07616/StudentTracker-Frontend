@@ -134,12 +134,13 @@ onMounted(() => {
 
     <!-- bez kolegija nema obveza - vodi korisnika -->
     <div v-if="!kolegiji.length" class="py-16 text-center text-gray-700">
+      <img src="/obveze.svg" alt="" class="mx-auto mb-6 w-56" />
       <p class="mb-4">Prvo dodaj kolegije da bi mogao unositi obveze.</p>
       <RouterLink to="/kolegiji" class="btn btn-primary inline-block">Idi na Kolegije</RouterLink>
     </div>
 
     <template v-else>
-      <!-- inline unos -->
+      <!-- unos -->
       <form @submit.prevent="dodajObvezu" class="mb-6 flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3">
         <select v-model="noviKolegijId" class="input mt-0! w-56!">
           <option value="" disabled>Kolegij</option>

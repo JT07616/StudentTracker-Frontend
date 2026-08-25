@@ -21,7 +21,7 @@ const router = createRouter({
     { path: '/pomoc', name: 'pomoc', component: Pomoc, meta: { requiresAuth: true } },
     { path: '/ucenje', name: 'ucenje', component: Ucenje, meta: { requiresAuth: true } },
     { path: '/profil', name: 'profil', component: Profil, meta: { requiresAuth: true } },
-    { path: '/o-aplikaciji', name: 'oAplikaciji', component: OAplikaciji }
+    { path: '/o-aplikaciji', name: 'oAplikaciji', component: OAplikaciji, meta: { requiresAuth: true } }
   ],
 })
 

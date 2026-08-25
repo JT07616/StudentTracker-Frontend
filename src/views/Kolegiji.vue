@@ -175,7 +175,10 @@ onMounted(() => {
       <button v-if="dostupneGodine.length" @click="openFormaGodine" class="btn btn-primary flex items-center gap-1.5"><Plus :size="16" /> Dodaj akademsku godinu</button>
     </div>
     <p v-if="greska" class="mb-4 text-red-600">{{ greska }}</p>
-    <div v-if="!godine.length" class="py-16 text-center text-gray-700"><p class="mb-4">Dodaj prvu godinu i kreni s unosom kolegija.</p></div>
+    <div v-if="!godine.length" class="py-16 text-center text-gray-700">
+      <img src="/kolegiji.svg" alt="" class="mx-auto mb-6 w-56" />
+      <p class="mb-4">Dodaj prvu godinu i kreni s unosom kolegija.</p>
+    </div>
     <!-- godine -->
     <div v-for="godina in godine" :key="godina._id" class="mb-8">
       <div class="mb-3 flex items-center gap-3">

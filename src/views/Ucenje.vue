@@ -138,7 +138,10 @@ onMounted(() => {
               <option v-for="kolegij in kolegiji" :key="kolegij._id" :value="kolegij._id">{{ kolegij.naziv }}</option>
             </select>
           </div>
-          <p v-if="!prikazaneSesije.length" class="px-4 py-8 text-center text-sm text-gray-500">{{ filterKolegij ? 'Nema sesija za taj kolegij' : 'Još nemaš sesija — pokreni timer' }}</p>
+          <div v-if="!prikazaneSesije.length" class="px-4 py-8 text-center">
+            <img v-if="!filterKolegij" src="/ucenje.svg" alt="" class="mx-auto mb-4 w-40" />
+            <p class="text-sm text-gray-500">{{ filterKolegij ? 'Nema sesija za taj kolegij' : 'Još nemaš sesija — pokreni timer' }}</p>
+          </div>
           <div v-for="sesija in prikazaneSesije" :key="sesija._id" class="flex items-center gap-3 border-b border-gray-100 px-4 py-3 last:border-b-0">
             <div class="flex-1">
               <p class="text-gray-900">{{ nazivKolegija(sesija.kolegijId) }}</p>
