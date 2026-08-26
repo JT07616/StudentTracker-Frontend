@@ -138,7 +138,6 @@ async function spremiKolegij() {
   }
 }
 
-// tip odreduje i poruku i rutu brisanja; kriva vrijednost pukne vidljivo (404 u modalu)
 function zatraziBrisanje(tip, stavka) {
   greskaBrisanja.value = ''
   potvrda.value = { tip, id: stavka._id, poruka: tip === 'kolegij' ? `Obrisati kolegij "${stavka.naziv}"? Obrisat će se i njegove obveze, a sesije učenja ostaju bez kolegija.` : `Ukloniti ${stavka.redniBroj}. godinu?` }
@@ -162,10 +161,9 @@ async function potvrdiBrisanje() {
 }
 
 const kolegijiSemestra = (semestar) => kolegiji.value.filter((kolegij) => kolegij.semestar === semestar)
-const polozeniEctsGodine = (godinaId) => kolegiji.value.filter((kolegij) => kolegij.godinaId === godinaId && kolegij.status === 'polozen').reduce((zbroj, kolegij) => zbroj + kolegij.ects, 0)
-
+const polozeniGodine = (godinaId) => kolegiji.value.filter((kolegij) => kolegij.godinaId === godinaId && kolegij.status === 'polozen').length
+const ukupnoGodine = (godinaId) => kolegiji.value.filter((kolegij) => kolegij.godinaId === godinaId).length
 const formatDatum = (datum) => new Date(datum).toLocaleDateString('hr-HR')
-// crveno samo ako je rok prosao, a kolegij jos nije polozen
 const rokPropusten = (kolegij) => kolegij.ispitniRok && kolegij.status !== 'polozen' && new Date(kolegij.ispitniRok) < new Date(new Date().setHours(0, 0, 0, 0))
 
 onMounted(() => {
@@ -198,9 +196,8 @@ onMounted(() => {
     <!-- godine -->
     <div v-for="godina in prikazaneGodine" :key="godina._id" class="mb-8">
       <div class="mb-3 flex items-center gap-3">
-        <h2 class="text-lg font-bold text-gray-900">{{ godina.redniBroj }}. godina</h2>
-        <span v-if="godina.akademskaGodina" class="text-sm text-gray-700">{{ godina.akademskaGodina }}</span>
-        <span class="text-sm text-gray-700">{{ polozeniEctsGodine(godina._id) }} ECTS položeno</span>
+        <h2 class="text-lg font-bold text-gray-900">{{ godina.redniBroj }}. godina<span v-if="godina.akademskaGodina" class="ml-2 text-sm font-normal text-gray-700">({{ godina.akademskaGodina }})</span></h2>
+        <span class="text-sm font-medium text-gray-900">{{ polozeniGodine(godina._id) }} od {{ ukupnoGodine(godina._id) }} kolegija položeno</span>
         <button @click="zatraziBrisanje('godina', godina)" class="btn ml-auto flex items-center gap-1.5 border border-gray-300 text-sm bg-white text-gray-700 hover:border-red-300 hover:bg-red-50 hover:text-red-600" title="Ukloni godinu"><Trash2 :size="14" />Ukloni akademsku godinu</button>
       </div>
       <!-- semestri -->
