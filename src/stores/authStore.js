@@ -3,7 +3,15 @@ import { ref, computed } from 'vue'
 import api from '../services/api.js'
 
 export const useAuthStore = defineStore('auth', () => {
-  const korisnik = ref(JSON.parse(localStorage.getItem('korisnik')) || null)
+  // ako u localStorageu ostane neispravan zapis, JSON.parse pukne i aplikacija se uopće ne pokrene (naišao na to u firefoxu)
+  const ucitajKorisnika = () => {
+    try {
+      return JSON.parse(localStorage.getItem('korisnik'))
+    } catch {
+      return null
+    }
+  }
+  const korisnik = ref(ucitajKorisnika() || null)
   // učitaj iz localStoragea pri pokretanju te će tako onda korisnik biti prijavljen i ako refresha
   const token = ref(localStorage.getItem('jwt_token') || null)
   const autoriziran = computed(() => !!token.value)
